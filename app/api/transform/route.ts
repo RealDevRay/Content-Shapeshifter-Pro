@@ -2,10 +2,19 @@ import { NextRequest, NextResponse } from 'next/server';
 import Groq from 'groq-sdk';
 import { extractContent } from '@/src/lib/scraper';
 import { personas, TransformResult } from '@/src/lib/prompts';
+import crypto from 'crypto';
 
 const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY,
 });
+
+// Simple in-memory cache
+const cache = new Map<string, { data: any; timestamp: number }>();
+const CACHE_TTL = 1000 * 60 * 60; // 1 hour
+
+function getCacheKey(input: string): string {
+  return crypto.createHash('md5').update(input).digest('hex');
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -19,16 +28,25 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const trimmedInput = input.trim();
+    const cacheKey = getCacheKey(trimmedInput);
+    const cachedResponse = cache.get(cacheKey);
+
+    if (cachedResponse && Date.now() - cachedResponse.timestamp < CACHE_TTL) {
+      console.log('Serving from cache for input:', trimmedInput.substring(0, 50) + '...');
+      return NextResponse.json(cachedResponse.data);
+    }
+
     let extractedText: string;
     let imageUrl: string | null = null;
     let title: string | null = null;
 
     // Check if input is a URL
-    const isUrl = input.trim().startsWith('http://') || input.trim().startsWith('https://');
+    const isUrl = trimmedInput.startsWith('http://') || trimmedInput.startsWith('https://');
 
     if (isUrl) {
       try {
-        const extracted = await extractContent(input.trim());
+        const extracted = await extractContent(trimmedInput);
         extractedText = extracted.text;
         imageUrl = extracted.imageUrl;
         title = extracted.title;
@@ -40,7 +58,7 @@ export async function POST(request: NextRequest) {
         );
       }
     } else {
-      extractedText = input.trim();
+      extractedText = trimmedInput;
     }
 
     if (!extractedText || extractedText.length < 50) {
@@ -90,12 +108,17 @@ export async function POST(request: NextRequest) {
 
     const results = await Promise.all(generationPromises);
 
-    return NextResponse.json({
+    const responseData = {
       extractedText,
       imageUrl,
       title,
       results: results as TransformResult[],
-    });
+    };
+
+    // Store in cache
+    cache.set(cacheKey, { data: responseData, timestamp: Date.now() });
+
+    return NextResponse.json(responseData);
   } catch (error) {
     console.error('API Error:', error);
     const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';

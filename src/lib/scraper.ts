@@ -48,7 +48,7 @@ export async function extractContent(url: string): Promise<ExtractedContent> {
         '[role="main"]',
       ];
 
-      let contentArea: cheerio.Cheerio | null = null;
+      let contentArea: cheerio.Cheerio<any> | null = null;
 
       for (const selector of contentSelectors) {
         const element = $(selector);
@@ -59,9 +59,9 @@ export async function extractContent(url: string): Promise<ExtractedContent> {
       }
 
       if (contentArea) {
-        let largestImage: { src: string; size: number } | null = null;
+        let largestImage: any = null;
 
-        contentArea.find('img').each((_, element) => {
+        contentArea.find('img').each((_: number, element: any) => {
           const src = $(element).attr('src');
           const width = parseInt($(element).attr('width') || '0', 10);
           const height = parseInt($(element).attr('height') || '0', 10);
@@ -101,7 +101,7 @@ export async function extractContent(url: string): Promise<ExtractedContent> {
       '[role="main"]',
     ];
 
-    let contentArea: cheerio.Cheerio | null = null;
+    let contentArea: cheerio.Cheerio<any> | null = null;
 
     for (const selector of contentSelectors) {
       const element = $(selector);
@@ -112,8 +112,11 @@ export async function extractContent(url: string): Promise<ExtractedContent> {
     }
 
     if (contentArea) {
+      // Remove unwanted elements
+      contentArea.find('nav, header, footer, aside, script, style, .ad, .advertisement').remove();
+
       // Extract paragraphs from content area
-      contentArea.find('p').each((_, element) => {
+      contentArea.find('p').each((_: number, element: any) => {
         const paragraphText = $(element).text().trim();
         if (paragraphText.length > 50) { // Filter out short paragraphs (likely ads/nav)
           text += paragraphText + '\n\n';
@@ -122,7 +125,7 @@ export async function extractContent(url: string): Promise<ExtractedContent> {
 
       // If no good paragraphs found, try headings
       if (!text) {
-        contentArea.find('h1, h2, h3, h4, h5, h6').each((_, element) => {
+        contentArea.find('h1, h2, h3, h4, h5, h6').each((_: number, element: any) => {
           text += $(element).text().trim() + '\n\n';
         });
       }
@@ -130,7 +133,7 @@ export async function extractContent(url: string): Promise<ExtractedContent> {
 
     // Fallback: extract from body if no content found
     if (!text) {
-      $('p').each((_, element) => {
+      $('p').each((_: number, element: any) => {
         const paragraphText = $(element).text().trim();
         if (paragraphText.length > 50 && !$(element).closest('nav, header, footer, aside').length) {
           text += paragraphText + '\n\n';
