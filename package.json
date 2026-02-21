@@ -10,6 +10,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@mistralai/mistralai": "^1.14.0",
     "axios": "^1.6.2",
     "cheerio": "1.0.0-rc.12",
     "clsx": "^2.1.1",

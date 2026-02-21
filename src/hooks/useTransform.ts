@@ -1,11 +1,21 @@
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { TransformResponse } from '@/src/lib/prompts';
+import { TransformResponse, UserSettings } from '@/src/lib/prompts';
 
 export function useTransform() {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<TransformResponse | null>(null);
+  
+  const [settings, setSettings] = useState<UserSettings>({
+    temperature: 0.7,
+    includeHashtags: true,
+    includeEmojis: true,
+    xAccountType: 'basic',
+    xFormat: 'thread',
+    linkedinFormat: 'post',
+    lengthPreference: 'default',
+  });
 
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) {
@@ -26,7 +36,7 @@ export function useTransform() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ input: input.trim() }),
+        body: JSON.stringify({ input: input.trim(), settings }),
       });
 
       const data = await response.json();
@@ -55,6 +65,8 @@ export function useTransform() {
     setInput,
     isLoading,
     result,
+    settings,
+    setSettings,
     handleSubmit,
     reset,
   };

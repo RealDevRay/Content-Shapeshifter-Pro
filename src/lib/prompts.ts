@@ -20,13 +20,23 @@ export interface TransformResponse {
   results: TransformResult[];
 }
 
+export interface UserSettings {
+  temperature: number;
+  includeHashtags: boolean;
+  includeEmojis: boolean;
+  xAccountType: 'basic' | 'premium';
+  xFormat: 'post' | 'thread';
+  linkedinFormat: 'post' | 'article';
+  lengthPreference: 'short' | 'default' | 'long';
+}
+
 export const personas: Persona[] = [
   {
-    id: 'twitter',
-    name: 'Twitter Thread',
+    id: 'x',
+    name: 'X Thread',
     icon: 'Twitter',
     description: 'Viral, attention-grabbing thread with hooks',
-    prompt: `Transform the following content into a viral Twitter thread (X post).
+    prompt: `Transform the following content into a viral X thread (post).
 
 Guidelines:
 - Start with an irresistible hook that stops the scroll

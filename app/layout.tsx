@@ -16,16 +16,18 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en">
       <body className={inter.className}>
         {children}
         <Toaster 
           position="top-center"
           toastOptions={{
             style: {
-              background: '#18181b',
-              border: '1px solid #27272a',
-              color: '#fafafa',
+              background: '#ffffff',
+              border: '2px solid #e5e7eb',
+              color: '#000000',
+              fontWeight: 600,
+              boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)'
             },
           }}
         />
